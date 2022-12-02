@@ -1,32 +1,11 @@
 import requests
+import json
 
-# class Traveloka:
-#     def getTravelokaReview():
-#         url = 'https://www.traveloka.com/api/v2/hotel/getHotelReviews'
-#         body = {
-#             'hotelId': '100000000000',
-#             'page': 1,
-#             'pageSize': 10,
-#             'sort': 'RECOMMENDED'
-#         }
-
-#         headers = {
-#             'authority': 'www.traveloka.com',
-#             'accept': 'application/json, text/plain, */*',
-#             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
-#             'content-type': 'application/json;charset=UTF-8',
-#             'origin': 'https://www.traveloka.com',
-#             'x-domain': 'accomContent'
-#         }
-
-#         response = requests.post(url, body=body, headers=headers)
-
-
-def getTravelokaReview():
+def getTravelokaReview(page):
         url = 'https://www.traveloka.com/api/v2/hotel/getHotelReviews'
         body = {
-    "fields": [],
-    "data": {
+        "fields": [],
+        "data": {
         "filterSortSpec": {
             "travelTheme": None,
             "travelType": None,
@@ -42,11 +21,11 @@ def getTravelokaReview():
         "ascending": True,
         "reviewLanguage": "ENGLISH",
         "hotelId": "3000010001127",
-        "skip": 1510,
+        "skip": page,
         "top": 10
-    },
-    "clientInterface": "desktop"
-}
+        },
+        "clientInterface": "desktop"
+        }
 
         headers = {
             'content-type': 'application/json',
@@ -56,14 +35,23 @@ def getTravelokaReview():
         }
 
         response = requests.post(url, json=body, headers=headers)
-        datas = response.json()
-        print (datas['data']['reviewList'][0]['reviewText'])
-        return print (response.status_code)
+        data = response.json()
+        return data['data']['reviewList']
+    
+def saveReview(data):
+    with open('review.json', 'a') as f:
+        json.dump(data, f, indent=4)
 
+review_data = []
+for i in range(0,1510,10):
+    data = getTravelokaReview(i)
+    for i in range(len(data)):
+        review_data.append({
+            'Name': data[i]['reviewerName'],
+            'Score': data[i]['overallScore'],
+            'Review': data[i]['reviewText'],
+        })
 
-getTravelokaReview()
-
-
-        
-
+with open('review.json', 'w') as f:
+    json.dump(review_data, f, indent=4)
 
